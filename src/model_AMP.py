@@ -112,10 +112,14 @@ def get_residuals(self):
 
 
 #set up figures to populate from loop 
+fig1,ax1 = plt.subplots(nexps,2,figsize=[10,12]) #plot creation and config 
+fig1.suptitle('AMP-A Dynamics') #full title config
 
-fig3,ax3 = plt.subplots(nexps,3,figsize=[20,14]) #plot creation and config 
-fig3.suptitle('Abiotic HOOH Model for AMP-A') #full title config
+fig2,ax2 = plt.subplots(nexps,3,figsize=[10,12]) #plot creation and config 
+fig2.suptitle('AMP-A Statistics') #full title config
 
+fig3,ax3 = plt.subplots(nexps,3,figsize=[16,8]) #plot creation and config 
+fig3.suptitle('AMP-A abiotic model dynamics and parameters') #full title config
 
 #####################################################
 # Set up large loop for going through all exps in DF
@@ -163,62 +167,35 @@ for (e,ne) in zip(exps,range(nexps)):  #looping through each exp with number
 #########################################################
 
 # Set up graph for Dynamics and param histograms
-    fig1,ax1 = plt.subplots(2,1,sharex=True, figsize=[8,5])  #making fig for param v param graphing 
-    fig1.suptitle('deltah vs Sh in Exp'+ str(e))
-    ax1[0].set_ylabel('HOOH Concentration nM/mL')
-    ax1[0].set_xlabel(' Time (hrs) ')
-    ax1[0].semilogy()
-    l1 = ax1[0].legend(loc = 'best')
-    l1.draw_frame(False)
-    ax1[1].set_xlabel('Frequency Sh')
-    ax1[0].set_ylabel('H concentration')
-    ax1[1].set_ylabel('Frequency deltah')
 
-    #graphing each assay's parameters against each other 
-    ax1[0].plot(df0.time,df0.abundance, marker='o',label = 'AMP data ' + str(e) )
-    ax1[0].plot(mod0.time,mod0['H'],c='r',lw=1.5,label=' model best fit')
-    ax1[1].scatter((posteriors0.Sh),(posteriors0.deltah))
-    fig1.savefig('../figures/AMP_'+str(e)+'_params.png')
+    ax1[ne,0].plot(df0.time,df0.abundance, marker='o',label = 'AMP data ' + str(e) ) #data of 0 H assay
+    ax1[ne,0].plot(mod0.time,mod0['H'],c='r',lw=1.5,label=' Model best fit') #best model fit of 0 H assay
+    plot_uncertainty(ax1[ne,0],a0,posteriors0,100) #plotting 100 itterations of model search for 0 H assay 
+    ax1[1,0].set_ylabel('HOOH Concentration nM/mL')
+    ax1[(ne-1),0].set_xlabel(' Time (hrs) ')
+    ax1[ne,0].semilogy()
+    l1 = ax3[ne,0].legend(loc = 'upper left')
+    l1.draw_frame(False)
+    ax1[ne,1].scatter((posteriors0.Sh),(posteriors0.deltah))
     
-    #################################
-    #graphing logged parameter values
-    ##################################
-    #crating and config of fig 
-    fig2,ax2 = plt.subplots(2,1,sharex=True,figsize=[8,5]) #make plot
-    fig2.suptitle('Trace plots for '+ str(e)) #set main title 
-    fig2.subplots_adjust(right=0.90, wspace = 0.25, top = 0.85) #shift white space for better fig view
-    fig2.supxlabel('Model Iteration') #set overall x title 
-    ax2[0].set_title('deltah')
-    ax2[0].set_ylabel('log deltah')
-    ax2[1].set_title('Sh ')
-    ax2[1].set_ylabel('log Sh')
-    #graphing iteration number vs parameter numbert logged 
-    ax2[1].scatter(posteriors0.iteration,np.log(posteriors0.Sh))
-    ax2[0].scatter(posteriors0.iteration,np.log(posteriors0.deltah))
-    
-    fig2.savefig('../figures/AMP_'+str(e)+'_Trace.png')
     
     #########################################
-    #graphing Residuals of best model vs data 
+    #graphing Residuals and Trace plots 
     ##########################################
 
-    #making and confing of residuals plot
-    fig4,ax4 = plt.subplots(2,1,sharex = True,figsize=[8,5])
-    fig4.suptitle('Residuals vs Fit Value ')
-    fig4.supylabel('Model Value (H)')
-    fig4.supxlabel('Residual')
-
-    #config legends for data differentialtion 
-    l4 = ax4[0].legend()
-    l5 = ax4[1].legend()
-    l4.draw_frame(False)
-    l5.draw_frame(False)
-
-    #plotting residual function output residual and abundance columns 
-    ax4[0].scatter(a0res['res'], a0res['abundance'],label = '0 H') #where )
-    fig4.savefig('../figures/AMP_'+str(e)+'_residuals.png')
-
-    #graph large fig of all runs together 
+    ax2[ne,0].set_title('Residuals')
+    #ax2[ne,0].set_ylabel('log deltah')
+    ax2[ne,1].set_title('Sh ')
+    ax2[ne,1].set_ylabel('log Sh')
+    ax2[ne,0].set_ylabel('HOOH Concentration nM/mL')
+    #graphing iteration number vs parameter numbert logged 
+    ax2[ne,0].scatter(a0res['res'], a0res['abundance'],label = '0 H') 
+    ax2[ne,1].scatter(posteriors0.iteration,np.log(posteriors0.Sh))
+    ax2[ne,2].scatter(posteriors0.iteration,np.log(posteriors0.deltah))
+    
+ #########################################
+ #graphing dynamics and paramter histograms 
+ ##########################################
     ax3[ne,0].plot(df0.time,df0.abundance, marker='o',label = 'AMP data ' + str(e) ) #data of 0 H assay
     ax3[ne,0].plot(mod0.time,mod0['H'],c='r',lw=1.5,label=' Model best fit') #best model fit of 0 H assay
     plot_uncertainty(ax3[ne,0],a0,posteriors0,100) #plotting 100 itterations of model search for 0 H assay 
@@ -235,14 +212,17 @@ for (e,ne) in zip(exps,range(nexps)):  #looping through each exp with number
 plt.show()
 
 
-fig4.savefig('../figures/AMP_all_dynamics.png')
+fig1.savefig('../figures/AMP_all_params.png')
+fig2.savefig('../figures/AMP_all_stats.png')
+fig3.savefig('../figures/AMP_all_dynamics.png')
 
 
 
 # 'program finished' flag
-print('\n Done my guy \n')
-
+print('\n ~~~****~~~****~~~ \n')
+print(' Done my guy ')
+print('\n ~~~****~~~****~~~ \n')
 print('\n Im free Im free! Im done calculating!' )
-
+print('\n ~~~****~~~****~~~ \n')
 
 
