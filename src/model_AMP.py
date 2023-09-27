@@ -25,7 +25,7 @@ import random as rd
 #set figure RC params 
 #####################################################
 plt.rcParams["figure.dpi"] = 300
-plt.rcParams.update({'font.size': 16})
+plt.rcParams.update({'font.size': 18})
 plt.rcParams['legend.fontsize'] = 'small'
 
 
@@ -110,31 +110,53 @@ def get_residuals(self):
     mod['res'] = res
     return(mod)
 
-
+#####################################################
 #set up figures to populate from loop 
-fig1,ax1 = plt.subplots(nexps,2,figsize=[10,12]) #plot creation and config 
+#####################################################
+fig1,ax1 = plt.subplots(nexps,2,figsize=[8,9]) #plot creation and config 
 fig1.suptitle('AMP-A Dynamics') #full title config
+ax1[2,0].set_ylabel('HOOH Concentration nM/mL')
+ax1[4,0].set_xlabel(' Time (hrs) ')
+ax1[2,1].set_ylabel('deltah')
+ax1[4,1].set_xlabel(' Sh')
 
-fig2,ax2 = plt.subplots(nexps,3,figsize=[10,12]) #plot creation and config 
-fig2.suptitle('AMP-A Statistics') #full title config
-
-fig3,ax3 = plt.subplots(nexps,3,figsize=[16,8]) #plot creation and config 
-fig3.suptitle('AMP-A abiotic model dynamics and parameters') #full title config
+fig1.subplots_adjust(left=0.20, bottom=0.10, right=0.95, top=0.90, wspace=0.30, hspace=0.4) #shift white space for better fig view
 
 #####################################################
-# Set up large loop for going through all exps in DF
+fig2,ax2 = plt.subplots(nexps,3,figsize=[10,9]) #plot creation and config 
+fig2.suptitle('AMP-A Statistics') #full title config
+ax2[0,0].set_title('Residuals')
+ax2[2,0].set_ylabel('HOOH model value')
+ax2[4,0].set_xlabel('Residual value')
+ax2[0,1].set_title('Sh')
+ax2[0,2].set_title('deltah')
+ax2[4,1].set_xlabel('Iteration') 
+ax2[4,2].set_xlabel('Iteration')
+fig2.subplots_adjust(left=0.10, bottom=0.1, right=0.95, top=0.90, wspace=0.30, hspace=0.4) #shift white space for better fig view
+
+#####################################################
+fig3,ax3 = plt.subplots(nexps,3,figsize=[9,9]) #plot creation and config 
+fig3.suptitle('AMP-A abiotic model dynamics and parameters') #full title config
+ax3[0,1].set_title('Sh')
+ax3[0,2].set_title('deltah')
+ax3[2,0].set_ylabel('HOOH Concentration nM/mL')
+ax3[(4),0].set_xlabel(' Time (hrs) ')
+ax3[(4),1].set_xlabel('Frequency')
+ax3[(4),2].set_xlabel('Frequency')
+fig3.subplots_adjust(left=0.15, bottom=0.10, right=0.95, top=0.90, wspace=0.3, hspace=0.4) #shift white space for better fig view
+
+#####################################################
+# Set up large loop 
 #####################################################
 
 for (e,ne) in zip(exps,range(nexps)):  #looping through each exp with number 
     df0 = df_all[(df_all['ID'] == e)] #setting working df as a single Experiment in df_all
     inits0 = pd.read_csv("../data/inits/AMP0.csv") #use and updat inits 
 
-#for each exp this is done so the inits can update within the fitting loop
-
 #####################################################
 #model param and state variable set up 
 #####################################################
-    nits = 10000 #number of iterations for MCMC (increase number for more bell curve of param distributions)
+    nits = 100000 #number of iterations for MCMC (increase number for more bell curve of param distributions)
 
     snames = ['H']  # state variable names
     pw = 1 #sigma we give model parameter]
@@ -155,11 +177,13 @@ for (e,ne) in zip(exps,range(nexps)):  #looping through each exp with number
     a0 = get_model(df0) #initialize model from df 
 
 # do fitting (get posteriors) for model 
+#####################################################
     posteriors0 = a0.MCMC(chain_inits=inits0,iterations_per_chain=nits,cpu_cores=1, print_report=False) #generating optimized posteriors for multiple param choices
     set_best_params(a0,posteriors0,snames) # set best params for model using function difined above  #getting params that give lowest error between model posterior set and data
     mod0 = a0.integrate() # run model with optimal params for 0 and save in mod
 
 #get residuals from model 
+#####################################################
     a0res = get_residuals(a0)  #is this using the best fit or just a first run???
 
 #########################################################
@@ -171,23 +195,14 @@ for (e,ne) in zip(exps,range(nexps)):  #looping through each exp with number
     ax1[ne,0].plot(df0.time,df0.abundance, marker='o',label = 'AMP data ' + str(e) ) #data of 0 H assay
     ax1[ne,0].plot(mod0.time,mod0['H'],c='r',lw=1.5,label=' Model best fit') #best model fit of 0 H assay
     plot_uncertainty(ax1[ne,0],a0,posteriors0,100) #plotting 100 itterations of model search for 0 H assay 
-    ax1[1,0].set_ylabel('HOOH Concentration nM/mL')
-    ax1[(ne-1),0].set_xlabel(' Time (hrs) ')
+    ax1[ne,1].scatter((posteriors0.Sh),(posteriors0.deltah))
     ax1[ne,0].semilogy()
     l1 = ax3[ne,0].legend(loc = 'upper left')
     l1.draw_frame(False)
-    ax1[ne,1].scatter((posteriors0.Sh),(posteriors0.deltah))
-    
-    
     #########################################
     #graphing Residuals and Trace plots 
     ##########################################
 
-    ax2[ne,0].set_title('Residuals')
-    #ax2[ne,0].set_ylabel('log deltah')
-    ax2[ne,1].set_title('Sh ')
-    ax2[ne,1].set_ylabel('log Sh')
-    ax2[ne,0].set_ylabel('HOOH Concentration nM/mL')
     #graphing iteration number vs parameter numbert logged 
     ax2[ne,0].scatter(a0res['res'], a0res['abundance'],label = '0 H') 
     ax2[ne,1].scatter(posteriors0.iteration,np.log(posteriors0.Sh))
@@ -199,16 +214,13 @@ for (e,ne) in zip(exps,range(nexps)):  #looping through each exp with number
     ax3[ne,0].plot(df0.time,df0.abundance, marker='o',label = 'AMP data ' + str(e) ) #data of 0 H assay
     ax3[ne,0].plot(mod0.time,mod0['H'],c='r',lw=1.5,label=' Model best fit') #best model fit of 0 H assay
     plot_uncertainty(ax3[ne,0],a0,posteriors0,100) #plotting 100 itterations of model search for 0 H assay 
-    ax3[2,0].set_ylabel('HOOH Concentration nM/mL')
-    ax3[(ne-1),0].set_xlabel(' Time (hrs) ')
+    ax3[ne,1].hist((np.log(posteriors0.Sh)))
+    ax3[ne,2].hist((np.log(posteriors0.deltah)))
     ax3[ne,0].semilogy()
     l3 = ax3[ne,0].legend(loc = 'upper left')
     l3.draw_frame(False)
-    ax3[ne,1].hist((np.log(posteriors0.Sh)))
-    ax3[ne,2].hist((np.log(posteriors0.deltah)))
-    ax3[0,1].set_title('Sh')
-    ax3[0,2].set_title('deltah')
-    
+
+
 plt.show()
 
 
