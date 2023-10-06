@@ -92,12 +92,12 @@ for a in ax1[:,0]:
 
 # ylabels
 for a in ax1[:,1]:
-    a.set_ylabel('Abundance')
-    a.set_xlabel('STDV')
+    a.set_ylabel('STDV')
+    a.set_xlabel('Abundance')
 
 for a in ax1[:,2]:
-    a.set_ylabel('Abundance')
-    a.set_xlabel('STDV')
+    a.set_ylabel('STDV')
+    a.set_xlabel('Abundance')
 
 
 

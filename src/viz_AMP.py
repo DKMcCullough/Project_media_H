@@ -1,6 +1,6 @@
 '''
 
-name:   vis_MHMpy 
+name:   vis_AMPpy 
 
 location: '/Users/dkm/Documents/Talmy_research/Zinser_lab/Projects/Monocultures/src'
 
@@ -34,7 +34,7 @@ plt.rcParams['legend.fontsize'] = 'small'
 #####################################################
 
 #main df read in 
-df_all = pd.read_csv("../data/MHM_blank.csv",header=0)
+df_all = pd.read_csv("../data/AMPMedia.csv",header=0)
 
 
 #format empty columns and column names 
@@ -64,7 +64,7 @@ nexps = exps.shape[0]   #making numnber list for exp
 #####################################################
 #####################################################
 fig1,ax1 = plt.subplots(nexps,3,figsize=[15,12]) #plot creation and config 
-fig1.suptitle('MHM Data Dynamics') #full title config
+fig1.suptitle('AMP Data Dynamics') #full title config
 ax1[0,0].set_title('HOOH Production ')
 
 
@@ -104,7 +104,7 @@ for a in ax1[:,2]:
 plt.show()
 
 
-fig1.savefig('../figures/MHM_data_dynamics.png')
+fig1.savefig('../figures/AMP_data_dynamics.png')
 
 
 
