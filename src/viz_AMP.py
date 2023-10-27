@@ -40,7 +40,7 @@ df_all = pd.read_csv("../data/AMPMedia.csv",header=0)
 #format empty columns and column names 
 df_all.drop(df_all.columns[df_all.columns.str.contains('unnamed',case = False)],axis = 1, inplace = True)
 df_all = df_all.rename({'Time (hr)':'time'}, axis=1)    #'renaming column to make it callable by 'times'
-
+df_all.fillna(0)
 #df_all[df_all['log1','log2','log3']] = np.log(df_all[df_all['rep1','rep2','rep3']])
 
 #making log of data to look at error
@@ -66,7 +66,8 @@ nexps = exps.shape[0]   #making numnber list for exp
 fig1,ax1 = plt.subplots(nexps,3,figsize=[15,12]) #plot creation and config 
 fig1.suptitle('AMP Data Dynamics') #full title config
 ax1[0,0].set_title('HOOH Production ')
-
+ax1[0,1].set_title('Raw Stats ')
+ax1[0,2].set_title('Logged Stats ')
 
 fig1.subplots_adjust(left=0.15, bottom=0.10, right=0.90, top=0.9, wspace=0.30, hspace=0.30) #shift white space for better fig view
 
