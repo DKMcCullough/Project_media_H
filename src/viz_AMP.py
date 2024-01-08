@@ -78,12 +78,15 @@ fig1.subplots_adjust(left=0.15, bottom=0.10, right=0.90, top=0.9, wspace=0.30, h
 
 for (e,ne) in zip(exps,range(nexps)):  #looping through each exp with number 
     df = df_all[(df_all['ID'] == e)] #setting working df as a single Experiment in df_all
-    ax1[ne,0].errorbar(df.time,df.abundance, yerr=df.sigma, marker = '*', c='purple',label =  str(e) + ' mean' ) #data of 0 H assay
-    ax1[ne,0].errorbar(df.time,df.log_abundance, yerr=df.log_sigma, marker = '*', c='pink',label =  str(e) + ' log mean' )
+    ax1[ne,0].errorbar(df.time,df.abundance, yerr=df.sigma, marker = '*', c='c',label =  str(e) + ' mean' ) #data of 0 H assay
+    ax1[ne,0].plot(df.time,df.rep1,marker = 'o', c='pink',label =  str(e) + ' rep 1' )
+    ax1[ne,0].plot(df.time,df.rep2,marker = 'o', c='m',label =  str(e) + ' rep 2' )
+    ax1[ne,0].plot(df.time,df.rep3,marker = 'o', c='purple',label =  str(e) + ' rep 3' )
+    #ax1[ne,0].errorbar(df.time,df.log_abundance, yerr=df.log_sigma, marker = '*', c='pink',label =  str(e) + ' log mean' )
     ax1[ne,1].scatter(df.abundance,df.sigma, c='k')
     ax1[ne,2].scatter(df.log_abundance,df.log_sigma, c='b')
     ax1[ne,0].semilogy()
-    l1 = ax1[ne,0].legend(loc = 'center right')
+    l1 = ax1[1,0].legend(loc = 'center',)
     l1.draw_frame(False)
     
 

@@ -1,6 +1,6 @@
 '''
 
-name:   model_abiotic_batch.py 
+name:   model_AMP_combined.py 
 
 location: '/Users/dkm/Documents/Talmy_research/Zinser_lab/Projects/Monocultures/src'
 
@@ -113,78 +113,79 @@ def get_residuals(self):
 #####################################################
 #set up figures to populate from loop 
 #####################################################
-fig1,ax1 = plt.subplots(nexps,2,figsize=[8,9]) #plot creation and config 
+fig1,ax1 = plt.subplots(1,2,figsize=[8,9]) #plot creation and config 
 fig1.suptitle('AMP-A Dynamics') #full title config
-ax1[2,0].set_ylabel('HOOH Concentration nM/mL')
-ax1[4,0].set_xlabel(' Time (hrs) ')
-ax1[2,1].set_ylabel('deltah')
-ax1[4,1].set_xlabel(' Sh')
+ax1[0].set_ylabel('HOOH Concentration nM/mL')
+ax1[0].set_xlabel(' Time (hrs) ')
+ax1[1].set_ylabel('deltah')
+ax1[1].set_xlabel(' Sh')
 
 fig1.subplots_adjust(left=0.20, bottom=0.10, right=0.95, top=0.90, wspace=0.30, hspace=0.4) #shift white space for better fig view
 
 #####################################################
-fig2,ax2 = plt.subplots(nexps,3,figsize=[10,9]) #plot creation and config 
+fig2,ax2 = plt.subplots(1,3,figsize=[10,9]) #plot creation and config 
 fig2.suptitle('AMP-A Statistics') #full title config
-ax2[0,0].set_title('Residuals')
-ax2[2,0].set_ylabel('HOOH model value')
-ax2[4,0].set_xlabel('Residual value')
-ax2[0,1].set_title('Sh')
-ax2[0,2].set_title('deltah')
-ax2[4,1].set_xlabel('Iteration') 
-ax2[4,2].set_xlabel('Iteration')
+ax2[0].set_title('Residuals')
+ax2[0].set_ylabel('HOOH model value')
+ax2[0].set_xlabel('Residual value')
+ax2[1].set_title('Sh')
+ax2[0].set_title('deltah')
+ax2[1].set_xlabel('Iteration') 
+ax2[0].set_xlabel('Iteration')
 fig2.subplots_adjust(left=0.10, bottom=0.1, right=0.95, top=0.90, wspace=0.30, hspace=0.4) #shift white space for better fig view
 
 #####################################################
-fig3,ax3 = plt.subplots(nexps,3,figsize=[9,9]) #plot creation and config 
+fig3,ax3 = plt.subplots(1,3,figsize=[9,9]) #plot creation and config 
 fig3.suptitle('AMP-A abiotic model dynamics and parameters') #full title config
-ax3[0,1].set_title('Sh')
-ax3[0,2].set_title('deltah')
-ax3[2,0].set_ylabel('HOOH Concentration nM/mL')
-ax3[(4),0].set_xlabel(' Time (hrs) ')
-ax3[(4),1].set_xlabel('Frequency')
-ax3[(4),2].set_xlabel('Frequency')
+ax3[1].set_title('Sh')
+ax3[2].set_title('deltah')
+ax3[0].set_ylabel('HOOH Concentration nM/mL')
+ax3[0].set_xlabel(' Time (hrs) ')
+ax3[1].set_xlabel('Frequency')
+ax3[2].set_xlabel('Frequency')
 fig3.subplots_adjust(left=0.15, bottom=0.10, right=0.95, top=0.90, wspace=0.3, hspace=0.4) #shift white space for better fig view
 
 #####################################################
 # Set up large loop 
 #####################################################
 
-for (e,ne) in zip(exps,range(nexps)):  #looping through each exp with number 
-    df0 = df_all[(df_all['ID'] == e)] #setting working df as a single Experiment in df_all
-    inits0 = pd.read_csv("../data/inits/AMP0.csv") #use and updat inits 
+ #looping through each exp with number 
+df0 = df_all
+#df0 = df_all[(df_all['ID'] == e)] #setting working df as a single Experiment in df_all
+inits0 = pd.read_csv("../data/inits/AMP0.csv") #use and updat inits 
 
 #####################################################
 #model param and state variable set up 
 #####################################################
-    nits = 1000 #number of iterations for MCMC (increase number for more bell curve of param distributions)
+nits = 1000 #number of iterations for MCMC (increase number for more bell curve of param distributions)
 
-    snames = ['H']  # state variable names
-    pw = 1 #sigma we give model parameter]
+snames = ['H']  # state variable names
+pw = 1 #sigma we give model parameter]
 
-    Hstart = df0.loc[df0['time'] == 0, 'abundance'].iloc[0] #Setting Hscale start as initial condition of each DF
-    deltah_prior=ODElib.parameter(stats_gen=scipy.stats.lognorm,\
-                                  hyperparameters={'s':pw,'scale':0.2}) #setting prior gruess and sigma of deltah param
-    Sh_prior=ODElib.parameter(stats_gen=scipy.stats.lognorm, 
-                              hyperparameters={'s':pw,'scale':1}) #setting prior gruess and sigma of Sh param
-    H0_prior=ODElib.parameter(stats_gen=scipy.stats.lognorm,\
-                              hyperparameters={'s':(pw/5),'scale':Hstart}) #setting state variiable  prior guess
-    H0_mean = 200 #setting H mean for odelib search 
+Hstart = df0.loc[df0['time'] == 0, 'abundance'].iloc[0] #Setting Hscale start as initial condition of each DF
+deltah_prior=ODElib.parameter(stats_gen=scipy.stats.lognorm,\
+                              hyperparameters={'s':pw,'scale':0.2}) #setting prior gruess and sigma of deltah param
+Sh_prior=ODElib.parameter(stats_gen=scipy.stats.lognorm, 
+                          hyperparameters={'s':pw,'scale':1}) #setting prior gruess and sigma of Sh param
+H0_prior=ODElib.parameter(stats_gen=scipy.stats.lognorm,\
+                          hyperparameters={'s':(pw/5),'scale':Hstart}) #setting state variiable  prior guess
+H0_mean = 2 #setting H mean for odelib search 
 
 #####################################################
 # initialize and run model 
 #####################################################
 
-    a0 = get_model(df0) #initialize model from df 
+a0 = get_model(df0) #initialize model from df 
 
 # do fitting (get posteriors) for model 
 #####################################################
-    posteriors0 = a0.MCMC(chain_inits=inits0,iterations_per_chain=nits,cpu_cores=1, print_report=False) #generating optimized posteriors for multiple param choices
-    set_best_params(a0,posteriors0,snames) # set best params for model using function difined above  #getting params that give lowest error between model posterior set and data
-    mod0 = a0.integrate() # run model with optimal params for 0 and save in mod
+posteriors0 = a0.MCMC(chain_inits=inits0,iterations_per_chain=nits,cpu_cores=1, print_report=False) #generating optimized posteriors for multiple param choices
+set_best_params(a0,posteriors0,snames) # set best params for model using function difined above  #getting params that give lowest error between model posterior set and data
+mod0 = a0.integrate() # run model with optimal params for 0 and save in mod
 
 #get residuals from model 
 #####################################################
-    a0res = get_residuals(a0)  #is this using the best fit or just a first run???
+a0res = get_residuals(a0)  #is this using the best fit or just a first run???
 
 #########################################################
 # graphing df and model outputs together
@@ -192,41 +193,38 @@ for (e,ne) in zip(exps,range(nexps)):  #looping through each exp with number
 
 # Set up graph for Dynamics and param histograms
 
-    ax1[ne,0].plot(df0.time,df0.abundance, marker='o',label = 'AMP data ' + str(e) ) #data of 0 H assay
-    ax1[ne,0].plot(mod0.time,mod0['H'],c='r',lw=1.5,label=' Model best fit') #best model fit of 0 H assay
-    plot_uncertainty(ax1[ne,0],a0,posteriors0,100) #plotting 100 itterations of model search for 0 H assay 
-    ax1[ne,1].scatter((posteriors0.Sh),(posteriors0.deltah))
-    ax1[ne,0].semilogy()
-    l1 = ax3[ne,0].legend(loc = 'upper left')
-    l1.draw_frame(False)
+ax1[0].plot(df0.time,df0.abundance, marker='o',label = 'AMP data ') #data of 0 H assay
+ax1[0].plot(mod0.time,mod0['H'],c='r',lw=1.5,label=' Model best fit') #best model fit of 0 H assay
+plot_uncertainty(ax1[0],a0,posteriors0,100) #plotting 100 itterations of model search for 0 H assay 
+ax1[1].scatter((posteriors0.Sh),(posteriors0.deltah))
+ax1[0].semilogy()
+l1 = ax3[0].legend(loc = 'upper left')
+l1.draw_frame(False)
     #########################################
     #graphing Residuals and Trace plots 
     ##########################################
 
     #graphing iteration number vs parameter numbert logged 
-    ax2[ne,0].scatter(a0res['res'], a0res['abundance'],label = '0 H') 
-    ax2[ne,1].scatter(posteriors0.iteration,np.log(posteriors0.Sh))
-    ax2[ne,2].scatter(posteriors0.iteration,np.log(posteriors0.deltah))
+ax2[0].scatter(a0res['res'], a0res['abundance'],label = '0 H') 
+ax2[1].scatter(posteriors0.iteration,np.log(posteriors0.Sh))
+ax2[2].scatter(posteriors0.iteration,np.log(posteriors0.deltah))
     
  #########################################
  #graphing dynamics and paramter histograms 
  ##########################################
-    ax3[ne,0].plot(df0.time,df0.abundance, marker='o',label = 'AMP data ' + str(e) ) #data of 0 H assay
-    ax3[ne,0].plot(mod0.time,mod0['H'],c='r',lw=1.5,label=' Model best fit') #best model fit of 0 H assay
-    plot_uncertainty(ax3[ne,0],a0,posteriors0,100) #plotting 100 itterations of model search for 0 H assay 
-    ax3[ne,1].hist((np.log(posteriors0.Sh)))
-    ax3[ne,2].hist((np.log(posteriors0.deltah)))
-    ax3[ne,0].semilogy()
-    l3 = ax3[ne,0].legend(loc = 'upper left')
-    l3.draw_frame(False)
+ax3[0].plot(df0.time,df0.abundance, marker='o',label = 'AMP data ') #data of 0 H assay
+ax3[0].plot(mod0.time,mod0['H'],c='r',lw=1.5,label=' Model best fit') #best model fit of 0 H assay
+plot_uncertainty(ax3[0],a0,posteriors0,100) #plotting 100 itterations of model search for 0 H assay 
+ax3[1].hist((np.log(posteriors0.Sh)))
+ax3[2].hist((np.log(posteriors0.deltah)))
+ax3[0].semilogy()
+l3 = ax3[0].legend(loc = 'upper left')
+l3.draw_frame(False)
 
 
 plt.show()
 
 
-fig1.savefig('../figures/AMP_all_params.png')
-fig2.savefig('../figures/AMP_all_stats.png')
-fig3.savefig('../figures/AMP_all_dynamics.png')
 
 
 
