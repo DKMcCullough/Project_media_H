@@ -51,6 +51,7 @@ df_all['log3'] = np.log(df_all['rep3'])
 df_all['abundance'] =  np.nanmean(np.r_[[df_all[i] for i in ['rep1','rep2','rep3']]],axis=0)
 df_all['log_abundance'] = np.nanmean(np.r_[[df_all[i] for i in ['log1','log2','log3']]],axis=0)
 df_all['log_sigma'] = np.std(np.r_[[df_all[i] for i in ['log1','log2','log3']]],axis=0)
+df_all['log_sigma'] = 0.1
 
 exps = df_all['ID'].unique()
 nexps = exps.shape[0]   #making numnber list for exp
